@@ -4,18 +4,42 @@ PREFIX fx:   <http://sparql.xyz/facade-x/ns/>
 PREFIX xyz:  <http://sparql.xyz/facade-x/data/>
 PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
 PREFIX schema: <https://schema.org/>
+PREFIX fabio: <http://purl.org/spar/fabio/>
+PREFIX frapo: <http://purl.org/cerif/frapo/>
 
 CONSTRUCT { 
 	# #--> Step 6. Construct Knowledge Graph (when the Ontology evolves, change this!!!)
-	?component schema:identifier ?id ;
-		a ?componentType ;
+	# Component triples:
+	?component a ?componentType ;
+		schema:identifier ?id , ?doi ;
 		schema:abstract ?label ;
 		schema:title ?title ;
-		schema:startDate ?r_date ;
-		schema:softwareVersion ?number ;
+		schema:releasedEvent ?r_event ;
 		schema:image ?image ;
 		schema:logo ?logo ;
-		schema:isPartOf ?wp .
+		schema:isPartOf ?w_package , ?_pilot , ?bnode3 ;
+		schema:discussionUrl ?log ;
+		schema:license ?licence ;
+		schema:copyrightNotice ?copyright ;
+		schema:contributor ?bnode0 ;
+		schema:distribution ?resource ;
+		schema:workExample ?demo .
+	# isPartOf triples:
+	?bnode3 schema:identifier ?_project .
+	# Contributor triples:
+	?bnode0  ?m0 ?contributor .
+	# Release Event triples:
+	?r_event a schema:releasedEvent ;
+		schema:startDate ?date ;
+		schema:softwareVersion ?number ;
+		schema:releaseNotes ?link .
+	# Work Package triples:
+	?w_package a fabio:WorkPackage .
+	# Pilot triples:
+	?_pilot a frapo:Investigation .
+	# Project triples:
+	?_project a schema:Project .
+
 
 } 
 #SELECT ?id ?type ?description
@@ -57,17 +81,42 @@ WHERE {
 			optional{ ?x xyz:name ?name } 
 			# Description
 	 		optional { ?x xyz:description ?description } 
-			optional { ?x xyz:brief-description ?description }  # To be eliminated when data is fixed.
 			# Image
 			optional { ?x xyz:image ?image } 
 			# Logo
 			optional { ?x xyz:logo ?logo } 
 			# Work Package
-			optional { ?x xyz:work-package [ fx:anySlot ?wp ] }
+			optional { ?x xyz:work-package ?b1 . ?b1 ?m1 ?wp }
+			# Pilot
+			optional { ?x xyz:pilot ?b2 . ?b2 ?m2 ?pilot }
+			# Project
+			optional { ?x xyz:project ?project }
+			# Resource
+			optional { ?x xyz:resource ?resource }
+			# Demo
+			optional { ?x xyz:demo ?demo }
 			# Release-date
-			optional { ?x xyz:release-date ?date} 
-			# Relese-number
-			optional { ?x xyz:release-number ?number} 
+			optional { ?x xyz:release-date ?date . } 
+			# Release-number
+			optional { ?x xyz:release-number ?number } 
+			# Release-link
+			optional { ?x xyz:release-link ?link } 
+			# Doi
+			optional { ?x xyz:doi ?doi } 
+			# Changelog
+			optional { ?x xyz:changelog ?log } 
+			# License
+			optional { ?x xyz:licence [ fx:anySlot ?licence ] } 
+			# Copyright
+			optional { ?x xyz:copyright ?copyright } 
+			# Contributors
+			optional { ?x xyz:contributors ?b0. ?b0 ?m0 ?contributor } 
+			# Related-components
+			#optional { ?x xyz:related-components ?r_comp} 
+			# Informed-by
+			#optional { ?x xyz:informed-by ?inf_by} 
+			# Use-case
+			#optional { ?x xyz:use-case ?use_case} 
 	#	} union {  #  Containers
 		#	?x xyz:container-id [ fx:anySlot ?id ] . 
 	 		#optional { ?x xyz:type ?type . filter (!isIRI(?type)) } .
@@ -78,9 +127,18 @@ WHERE {
 	}
 	
 	#--> Step 5. Build entities (when entity IRIs design change, modify this!)
-	BIND ( fx:entity ( xyz:, "component/", ?id ) AS ?component ) .
-	BIND ( fx:entity ( xyz:, "type/", replace(?type, " ", "") ) AS ?componentType ) .
-	BIND ( fx:literal ( ?description, "en" ) AS ?label ) .
+	# Entities:
+	BIND ( fx:entity ( xyz:, "component/", ?id ) AS ?component ) 
+	BIND ( fx:entity ( xyz:, "type/", replace(?type, " ", "") ) AS ?componentType ) 
+	BIND ( fx:entity ( xyz:, "work-package/", ?wp ) AS ?w_package ) 
+	BIND ( fx:entity ( xyz:, "release-event/", ?id ) AS ?r_event ) 
+	BIND ( fx:entity ( xyz:, "pilot/", ?pilot) AS ?_pilot ) 
+	BIND ( fx:entity ( xyz:, "project/", ?project) AS ?_project ) 
+	# Blank Nodes
+	BIND ( fx:bnode ( ?b0 ) AS ?bnode0 )
+	BIND ( fx:bnode ( ?project ) AS ?bnode3 )
+	# Literals:
+	BIND ( fx:literal ( ?description, "en" ) AS ?label ) 
 	BIND ( fx:literal ( ?name, "en" ) AS ?title )
-	BIND ( fx:literal ( ?date, xsd:date ) AS ?r_date)
+	#BIND ( fx:literal ( ?date, xsd:date ) AS ?r_date)
 }
