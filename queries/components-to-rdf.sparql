@@ -14,23 +14,20 @@ CONSTRUCT {
 		schema:identifier ?id , ?doi ;
 		schema:abstract ?label ;
 		schema:title ?title ;
-		schema:releasedEvent ?r_event ;
+		schema:releasedEvent ?bnode0 ;
 		schema:image ?image ;
 		schema:logo ?logo ;
-		schema:isPartOf ?w_package , ?_pilot , ?bnode3 ;
+		schema:isPartOf ?w_package , ?_pilot , ?_project ;
 		schema:discussionUrl ?log ;
 		schema:license ?licence ;
 		schema:copyrightNotice ?copyright ;
-		schema:contributor ?bnode0 ;
+		schema:contributor ?contributor ;
 		schema:distribution ?resource ;
 		schema:workExample ?demo .
 	# isPartOf triples:
-	?bnode3 schema:identifier ?_project .
-	# Contributor triples:
-	?bnode0  ?m0 ?contributor .
+	?_project a schema:Project .
 	# Release Event triples:
-	?r_event a schema:releasedEvent ;
-		schema:startDate ?date ;
+	?bnode0 schema:startDate ?date ;
 		schema:softwareVersion ?number ;
 		schema:releaseNotes ?link .
 	# Work Package triples:
@@ -86,9 +83,9 @@ WHERE {
 			# Logo
 			optional { ?x xyz:logo ?logo } 
 			# Work Package
-			optional { ?x xyz:work-package ?b1 . ?b1 ?m1 ?wp }
+			optional { ?x xyz:work-package [ fx:anySlot ?wp ] }
 			# Pilot
-			optional { ?x xyz:pilot ?b2 . ?b2 ?m2 ?pilot }
+			optional { ?x xyz:pilot [ fx:anySlot ?pilot ] }
 			# Project
 			optional { ?x xyz:project ?project }
 			# Resource
@@ -110,7 +107,7 @@ WHERE {
 			# Copyright
 			optional { ?x xyz:copyright ?copyright } 
 			# Contributors
-			optional { ?x xyz:contributors ?b0. ?b0 ?m0 ?contributor } 
+			optional { ?x xyz:contributors [ fx:anySlot ?contributor ] } 
 			# Related-components
 			#optional { ?x xyz:related-components ?r_comp} 
 			# Informed-by
@@ -135,8 +132,7 @@ WHERE {
 	BIND ( fx:entity ( xyz:, "pilot/", ?pilot) AS ?_pilot ) 
 	BIND ( fx:entity ( xyz:, "project/", ?project) AS ?_project ) 
 	# Blank Nodes
-	BIND ( fx:bnode ( ?b0 ) AS ?bnode0 )
-	BIND ( fx:bnode ( ?project ) AS ?bnode3 )
+	BIND ( fx:bnode ( ?link ) AS ?bnode0 )
 	# Literals:
 	BIND ( fx:literal ( ?description, "en" ) AS ?label ) 
 	BIND ( fx:literal ( ?name, "en" ) AS ?title )
